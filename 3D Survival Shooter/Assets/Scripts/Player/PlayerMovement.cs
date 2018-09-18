@@ -15,7 +15,6 @@ public class PlayerMovement : MonoBehaviour
     private float groundRadius;
     [SerializeField]
     private LayerMask whatIsGround;
-    private bool isGrounded;
     [SerializeField]
     private float jumpForce;
 
@@ -35,8 +34,6 @@ public class PlayerMovement : MonoBehaviour
         // Store the input axes.
         float h = Input.GetAxisRaw("Horizontal");
         float v = Input.GetAxisRaw("Vertical");
-
-        isGrounded = IsGrounded();
 
         // Move the player around the scene.
         Move(h, v);
@@ -60,9 +57,8 @@ public class PlayerMovement : MonoBehaviour
         // Move the player to it's current position plus the movement.
         playerRigidbody.MovePosition(transform.position + movement);
 
-        if (isGrounded && Input.GetKeyDown(KeyCode.Space))
+        if (IsGrounded() && Input.GetKey(KeyCode.Space))
         {
-            isGrounded = false;
             playerRigidbody.AddForce(new Vector3(0, jumpForce, 0));
         }
     }
