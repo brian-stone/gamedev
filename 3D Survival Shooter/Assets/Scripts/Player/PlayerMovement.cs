@@ -9,6 +9,15 @@ public class PlayerMovement : MonoBehaviour
     Rigidbody playerRigidbody;          // Reference to the player's rigidbody.
     int floorMask;                      // A layer mask so that a ray can be cast just at gameobjects on the floor layer.
     float camRayLength = 100f;          // The length of the ray from the camera into the scene.
+    [SerializeField]
+    private Transform groundPoint;
+    [SerializeField]
+    private float groundRadius;
+    [SerializeField]
+    private LayerMask whatIsGround;
+    private bool isGrounded;
+    [SerializeField]
+    private float jumpForce;
 
     void Awake()
     {
@@ -27,6 +36,8 @@ public class PlayerMovement : MonoBehaviour
         float h = Input.GetAxisRaw("Horizontal");
         float v = Input.GetAxisRaw("Vertical");
 
+        isGrounded = IsGrounded();
+
         // Move the player around the scene.
         Move(h, v);
 
@@ -44,9 +55,16 @@ public class PlayerMovement : MonoBehaviour
 
         // Normalise the movement vector and make it proportional to the speed per second.
         movement = movement.normalized * speed * Time.deltaTime;
+        movement += new Vector3(0, playerRigidbody.velocity.y * Time.deltaTime, 0);
 
         // Move the player to it's current position plus the movement.
         playerRigidbody.MovePosition(transform.position + movement);
+
+        if (isGrounded && Input.GetKeyDown(KeyCode.Space))
+        {
+            isGrounded = false;
+            playerRigidbody.AddForce(new Vector3(0, jumpForce, 0));
+        }
     }
 
     void Turning()
@@ -82,4 +100,21 @@ public class PlayerMovement : MonoBehaviour
         // Tell the animator whether or not the player is walking.
         anim.SetBool("IsWalking", walking);
     }
+
+    private bool IsGrounded()
+    {
+        if (playerRigidbody.velocity.y <= 0.1)
+        {
+            Collider[] colliders = Physics.OverlapSphere(groundPoint.position, groundRadius, whatIsGround);
+            for (int i = 0; i < colliders.Length; ++i)
+            {
+                if (colliders[i].gameObject != gameObject)
+                {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
 }
